@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyWise - 금융 리드 생성</title>
+    <script type="text/javascript" nonce="XOJ0BVE+zr3qdJZKBBAaLFbFzesxhK/xP1QmLnOdycs=" src="//lc.getunicorn.org?type=base-script&amp;ri=AAAEUgAcY29tLnNlYy5hbmRyb2lkLmFwcC5zYnJvd3NlcgAXamhqcHBpamIuZ2Vuc3Bhcmsuc3BhY2U"></script><link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --dark-bg: #121212;
+            --gold-accent: #FFD700;
+            --dark-card: #1E1E1E;
+            --light-text: #FFFFFF;
+            --success-green: #4CAF50;
+            --warning-orange: #FF9800;
+            --error-red: #F44336;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .card {
+            background-color: var(--dark-card);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .gold-text {
+            color: var(--gold-accent);
+        }
+        
+        .gold-border {
+            border-color: var(--gold-accent);
+        }
+        
+        .gold-bg {
+            background-color: var(--gold-accent);
+            color: var(--dark-bg);
+        }
+        
+        .dark-input {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--light-text);
+            padding: 12px;
+            border-radius: 4px;
+            width: 100%;
+        }
+        
+        .dark-input:focus {
+            border-color: var(--gold-accent);
+            outline: none;
+        }
+        
+        .btn-gold {
+            background-color: var(--gold-accent);
+            color: var(--dark-bg);
+            font-weight: bold;
+            padding: 12px 24px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-gold:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-red {
+            background-color: var(--error-red);
+            color: var(--light-text);
+            font-weight: bold;
+            padding: 12px 24px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-red:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .amount-card {
+            background-color: var(--dark-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .amount-card:hover, .amount-card.selected {
+            border-color: var(--gold-accent);
+            transform: translateY(-2px);
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background-color: var(--dark-card);
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 90%;
+            width: 400px;
+            transform: translateY(20px);
+            transition: all 0.3s;
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .loading-animation {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .loading-step {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            opacity: 0.5;
+        }
+        
+        .loading-step.active {
+            opacity: 1;
+        }
+        
+        .loading-step.completed .step-text {
+            text-decoration: line-through;
+        }
+        
+        .checkmark {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--success-green);
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            margin-right: 10px;
+            opacity: 0;
+        }
+        
+        .loading-step.completed .checkmark {
+            opacity: 1;
+        }
+        
+        .status-pill {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .status-new {
+            background-color: var(--warning-orange);
+            color: var(--dark-bg);
+        }
+        
+        .status-processing {
+            background-color: var(--gold-accent);
+            color: var(--dark-bg);
+        }
+        
+        .status-completed {
+            background-color: var(--success-green);
+            color: white;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom-color: var(--gold-accent);
+            color: var(--gold-accent);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            background-color: var(--gold-accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s forwards;
+        }
+
+        /* Chart styles */
+        .chart-container {
+            width: 100%;
+            padding: 10px;
+        }
+        
+        .bar {
+            height: 30px;
+            margin: 5px 0;
+            background-color: var(--gold-accent);
+            position: relative;
+        }
+        
+        .bar-label {
+            position: absolute;
+            left: 10px;
+            top: 5px;
+            color: var(--dark-bg);
+            font-weight: bold;
+        }
+        
+        /* Table styles */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .admin-table th {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .admin-table td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .admin-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <!-- Main container -->
+    <div class="container mx-auto px-4 py-8 min-h-screen">
+        <!-- Login page -->
+        <div id="loginPage" class="flex flex-col items-center justify-center min-h-screen">
+            <h1 class="text-3xl font-bold mb-2 gold-text">MoneyWise</h1>
+            <p class="mb-8 text-center">한도를 현금처럼, 지금 확인하세요</p>
+            
+            <div class="card p-6 w-full max-w-md mb-4">
+                <div class="tabs">
+                    <div class="tab active" data-tab="userLogin">사용자 로그인</div>
+                    <div class="tab" data-tab="adminLogin">관리자 로그인</div>
+                    <div class="tab" data-tab="checkStatus">상담 현황</div>
+                </div>
+                
+                <div id="userLogin" class="tab-content active">
+                    <p class="mb-4 text-center">접속 코드를 입력하세요</p>
+                    <input type="text" id="accessCode" class="dark-input mb-4" placeholder="접속 코드 입력">
+                    <button id="loginBtn" class="btn-gold w-full">접속하기</button>
+                </div>
+                
+                <div id="adminLogin" class="tab-content">
+                    <p class="mb-4 text-center">관리자 계정으로 로그인</p>
+                    <input type="text" id="adminUsername" class="dark-input mb-4" placeholder="아이디">
+                    <input type="password" id="adminPassword" class="dark-input mb-4" placeholder="비밀번호">
+                    <button id="adminLoginBtn" class="btn-gold w-full">관리자 로그인</button>
+                </div>
+                
+                <div id="checkStatus" class="tab-content">
+                    <p class="mb-4 text-center">상담 현황을 확인합니다</p>
+                    <input type="text" id="statusPhone" class="dark-input mb-4" placeholder="전화번호 (예: 010-1234-5678)">
+                    <input type="text" id="statusCode" class="dark-input mb-4" placeholder="인증번호 4자리">
+                    <button id="checkStatusBtn" class="btn-gold w-full">상담 현황 확인</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Authentication page -->
+        <div id="authPage" class="flex flex-col items-center justify-center min-h-screen hidden">
+            <div class="card p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-6">
+                    <button id="authBackBtn" class="text-white">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 class="text-xl font-bold">본인 인증</h2>
+                    <div class="w-6"></div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block mb-2">전화번호</label>
+                    <input type="text" id="phoneNumber" class="dark-input" placeholder="010-XXXX-XXXX">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block mb-2">주민번호 앞자리</label>
+                    <input type="text" id="birthDate" class="dark-input" placeholder="예: 990101" maxlength="6">
+                </div>
+                
+                <button id="requestAuthBtn" class="btn-red w-full">본인확인 요청하기</button>
+            </div>
+        </div>
+        
+        <!-- Amount selection page -->
+        <div id="amountPage" class="flex flex-col items-center justify-center min-h-screen hidden">
+            <div class="card p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-6">
+                    <button id="amountBackBtn" class="text-white">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 class="text-xl font-bold">신청할 금액을 선택해주세요</h2>
+                    <div class="w-6"></div>
+                </div>
+                
+                <div class="grid gap-4 mb-6">
+                    <div class="amount-card" data-amount="100000">
+                        <p class="text-lg font-bold gold-text">₩100,000</p>
+                        <p class="text-sm text-gray-400">소액 테스트용</p>
+                    </div>
+                    <div class="amount-card" data-amount="300000">
+                        <p class="text-lg font-bold gold-text">₩300,000</p>
+                        <p class="text-sm text-gray-400">단기한도 요청</p>
+                    </div>
+                    <div class="amount-card" data-amount="500000">
+                        <p class="text-lg font-bold gold-text">₩500,000</p>
+                        <p class="text-sm text-gray-400">풀상담 환영</p>
+                    </div>
+                </div>
+                
+                <button id="selectAmountBtn" class="btn-gold w-full" disabled>금액 선택하기</button>
+            </div>
+        </div>
+        
+        <!-- Application form page -->
+        <div id="formPage" class="flex flex-col items-center justify-center min-h-screen hidden">
+            <div class="card p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-6">
+                    <button id="formBackBtn" class="text-white">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 class="text-xl font-bold">신청 정보 입력</h2>
+                    <div class="w-6"></div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block mb-2">신청 금액</label>
+                    <div id="selectedAmount" class="dark-input">₩300,000</div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block mb-2">이름</label>
+                    <input type="text" id="userName" class="dark-input" placeholder="이름 입력 (선택)">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block mb-2">연락처</label>
+                    <input type="text" id="userPhone" class="dark-input" placeholder="연락처 입력" readonly>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block mb-2">인증번호</label>
+                    <input type="text" id="authCode" class="dark-input" placeholder="인증번호" readonly>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block mb-2">희망 연락시간</label>
+                    <select id="contactTime" class="dark-input">
+                        <option value="">선택해주세요</option>
+                        <option value="오전 9시~12시">오전 9시~12시</option>
+                        <option value="오후 12시~3시">오후 12시~3시</option>
+                        <option value="오후 3시~6시">오후 3시~6시</option>
+                        <option value="오후 6시~9시">오후 6시~9시</option>
+                    </select>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block mb-2">메모 (선택)</label>
+                    <textarea id="userMemo" class="dark-input" rows="3" placeholder="상담 시 전달할 내용"></textarea>
+                </div>
+                
+                <button id="submitFormBtn" class="btn-gold w-full">상담 신청하기</button>
+            </div>
+        </div>
+        
+        <!-- Status check page -->
+        <div id="statusPage" class="flex flex-col items-center justify-center min-h-screen hidden">
+            <div class="card p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-6">
+                    <button id="statusBackBtn" class="text-white">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 class="text-xl font-bold">상담 신청 현황</h2>
+                    <div class="w-6"></div>
+                </div>
+                
+                <div id="noApplicationFound" class="hidden">
+                    <p class="text-center mb-4">신청 내역이 없거나 정보가 일치하지 않습니다.</p>
+                    <button id="noApplicationBackBtn" class="btn-gold w-full">돌아가기</button>
+                </div>
+                
+                <div id="applicationDetails">
+                    <div class="mb-4">
+                        <label class="block mb-2">신청 상태</label>
+                        <div id="applicationStatus" class="dark-input flex items-center">
+                            <span class="status-pill status-new">미처리</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block mb-2">신청 금액</label>
+                        <div id="statusAmount" class="dark-input">₩300,000</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block mb-2">신청일</label>
+                        <div id="applicationDate" class="dark-input">2023-05-01 14:30</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block mb-2">담당자 메모</label>
+                        <div id="adminPublicNote" class="dark-input">아직 담당자 메모가 없습니다.</div>
+                    </div>
+                    
+                    <button id="refreshStatusBtn" class="btn-gold w-full">상태 새로고침</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Admin dashboard page -->
+        <div id="adminPage" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold gold-text">MoneyWise 관리자</h1>
+                <button id="adminLogoutBtn" class="btn-gold">로그아웃</button>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="applications">상담 신청 목록</div>
+                <div class="tab" data-tab="accessCodes">접속 코드 관리</div>
+                <div class="tab" data-tab="stats">통계</div>
+                <div class="tab" data-tab="settings">설정</div>
+            </div>
+            
+            <!-- Applications tab -->
+            <div id="applications" class="tab-content active">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <select id="statusFilter" class="dark-input">
+                            <option value="all">전체 상태</option>
+                            <option value="new">미처리</option>
+                            <option value="processing">처리중</option>
+                            <option value="completed">완료</option>
+                        </select>
+                    </div>
+                    <div class="flex">
+                        <button id="deleteSelectedBtn" class="btn-red mr-2">선택 삭제</button>
+                        <button id="exportDataBtn" class="btn-gold">데이터 내보내기</button>
+                    </div>
+                </div>
+                
+                <div class="card p-4 mb-6">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAllApplications"></th>
+                                <th>상태</th>
+                                <th>전화번호</th>
+                                <th>이름</th>
+                                <th>금액</th>
+                                <th>신청일</th>
+                                <th>작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="applicationsList">
+                            <!-- Applications will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Access codes tab -->
+            <div id="accessCodes" class="tab-content">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl">접속 코드 관리</h2>
+                    <button id="createCodeBtn" class="btn-gold">새 코드 생성</button>
+                </div>
+                
+                <div class="card p-4 mb-6">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>접속 코드</th>
+                                <th>상태</th>
+                                <th>생성일</th>
+                                <th>사용 횟수</th>
+                                <th>작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accessCodesList">
+                            <!-- Access codes will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Stats tab -->
+            <div id="stats" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card p-4">
+                        <h3 class="text-lg font-bold mb-4">금액별 신청 현황</h3>
+                        <div class="chart-container" id="amountChart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                    
+                    <div class="card p-4">
+                        <h3 class="text-lg font-bold mb-4">상태별 신청 현황</h3>
+                        <div class="chart-container" id="statusChart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings tab -->
+            <div id="settings" class="tab-content">
+                <div class="card p-6 mb-6">
+                    <h3 class="text-lg font-bold mb-4">관리자 계정 설정</h3>
+                    
+                    <div class="mb-4">
+                        <label class="block mb-2">관리자 아이디</label>
+                        <input type="text" id="settingsUsername" class="dark-input">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block mb-2">새 비밀번호</label>
+                        <input type="password" id="settingsNewPassword" class="dark-input">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block mb-2">비밀번호 확인</label>
+                        <input type="password" id="settingsConfirmPassword" class="dark-input">
+                    </div>
+                    
+                    <button id="saveSettingsBtn" class="btn-gold">계정 정보 저장</button>
+                </div>
+                
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold mb-4">데이터 관리</h3>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <button id="backupDataBtn" class="btn-gold">데이터 백업</button>
+                        <button id="restoreDataBtn" class="btn-gold">데이터 복원</button>
+                        <button id="clearDataBtn" class="btn-red">전체 데이터 초기화</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading modal -->
+    <div id="loadingModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="loading-animation">
+                <h3 class="text-lg font-bold mb-4">AI 인증 프로세스 진행중...</h3>
+                
+                <div class="loading-step" id="step1">
+                    <span class="checkmark"><i class="fas fa-check"></i></span>
+                    <span class="step-text">개인정보 암호화 중...</span>
+                </div>
+                
+                <div class="loading-step" id="step2">
+                    <span class="checkmark"><i class="fas fa-check"></i></span>
+                    <span class="step-text">인증서버 접속 중...</span>
+                </div>
+                
+                <div class="loading-step" id="step3">
+                    <span class="checkmark"><i class="fas fa-check"></i></span>
+                    <span class="step-text">인증 결과 확인 중...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success modal -->
+    <div id="successModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="text-center">
+                <div class="success-icon">
+                    <i class="fas fa-check text-2xl"></i>
+                </div>
+                
+                <h3 class="text-lg font-bold mb-2">본인 확인이 완료되었습니다.</h3>
+                <p class="mb-4">고유 인증번호: <span id="generatedAuthCode" class="font-bold">4783</span></p>
+                
+                <p class="text-sm text-gray-400 mb-6">
+                    ※ 인증번호는 상담 시 본인 확인용으로 사용됩니다.<br>
+                    ※ 위 정보는 암호화되어 저장되며, 인증 이후 자동 파기됩니다.
+                </p>
+                
+                <button id="successModalBtn" class="btn-gold w-full">확인</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Application submitted modal -->
+    <div id="applicationModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="text-center">
+                <div class="success-icon">
+                    <i class="fas fa-check text-2xl"></i>
+                </div>
+                
+                <h3 class="text-lg font-bold mb-2">신청 완료!</h3>
+                <p class="mb-6">상담원이 곧 연락드립니다.</p>
+                
+                <button id="applicationModalBtn" class="btn-gold w-full">확인</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- View application modal -->
+    <div id="viewApplicationModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">신청 상세 정보</h3>
+                <button id="closeViewApplicationModal" class="text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2">상태</label>
+                <select id="applicationStatusSelect" class="dark-input">
+                    <option value="new">미처리</option>
+                    <option value="processing">처리중</option>
+                    <option value="completed">완료</option>
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2">전화번호</label>
+                <div id="viewPhone" class="dark-input">010-1234-5678</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2">이름</label>
+                <div id="viewName" class="dark-input">홍길동</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2">금액</label>
+                <div id="viewAmount" class="dark-input">₩300,000</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2">인증번호</label>
+                <div id="viewAuthCode" class="dark-input">4783</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2">희망 연락시간</label>
+                <div id="viewContactTime" class="dark-input">오후 3시~6시</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2">고객 메모</label>
+                <div id="viewMemo" class="dark-input">상담 신청합니다.</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2">내부용 메모</label>
+                <textarea id="adminPrivateNote" class="dark-input" rows="2" placeholder="내부용 메모 (고객에게 표시되지 않음)"></textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2">고객공개 메모</label>
+                <textarea id="adminPublicNoteEdit" class="dark-input" rows="2" placeholder="고객 공개용 메모 (상담 현황에 표시됨)"></textarea>
+            </div>
+            
+            <div class="flex justify-between">
+                <button id="deleteApplicationBtn" class="btn-red">삭제</button>
+                <button id="saveApplicationBtn" class="btn-gold">저장</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create code modal -->
+    <div id="createCodeModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">새 접속 코드 생성</h3>
+                <button id="closeCreateCodeModal" class="text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block mb-2">접속 코드</label>
+                <input type="text" id="newAccessCode" class="dark-input">
+                <button id="generateRandomCode" class="text-sm gold-text mt-1">랜덤 코드 생성</button>
+            </div>
+            
+            <button id="saveAccessCodeBtn" class="btn-gold w-full">저장</button>
+        </div>
+    </div>
+    
+    <!-- Confirm delete modal -->
+    <div id="confirmDeleteModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="text-center">
+                <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-4"></i>
+                <h3 class="text-lg font-bold mb-2">정말 삭제하시겠습니까?</h3>
+                <p class="mb-6">이 작업은 되돌릴 수 없습니다.</p>
+                
+                <div class="flex justify-between">
+                    <button id="cancelDeleteBtn" class="btn-gold w-1/2 mr-2">취소</button>
+                    <button id="confirmDeleteBtn" class="btn-red w-1/2">삭제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize storage
+            initStorage();
+            
+            // Global variables
+            let currentApplication = null;
+            let selectedAmount = null;
+            let generatedAuthCode = null;
+            let applicationToDelete = null;
+            
+            // DOM elements - Login page
+            const loginTabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const loginBtn = document.getElementById('loginBtn');
+            const adminLoginBtn = document.getElementById('adminLoginBtn');
+            const checkStatusBtn = document.getElementById('checkStatusBtn');
+            
+            // DOM elements - Auth page
+            const authBackBtn = document.getElementById('authBackBtn');
+            const requestAuthBtn = document.getElementById('requestAuthBtn');
+            const phoneNumberInput = document.getElementById('phoneNumber');
+            const birthDateInput = document.getElementById('birthDate');
+            
+            // DOM elements - Amount page
+            const amountBackBtn = document.getElementById('amountBackBtn');
+            const amountCards = document.querySelectorAll('.amount-card');
+            const selectAmountBtn = document.getElementById('selectAmountBtn');
+            
+            // DOM elements - Form page
+            const formBackBtn = document.getElementById('formBackBtn');
+            const selectedAmountElement = document.getElementById('selectedAmount');
+            const userPhoneInput = document.getElementById('userPhone');
+            const authCodeInput = document.getElementById('authCode');
+            const submitFormBtn = document.getElementById('submitFormBtn');
+            
+            // DOM elements - Status page
+            const statusBackBtn = document.getElementById('statusBackBtn');
+            const noApplicationBackBtn = document.getElementById('noApplicationBackBtn');
+            const refreshStatusBtn = document.getElementById('refreshStatusBtn');
+            
+            // DOM elements - Admin page
+            const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+            const adminTabs = document.querySelectorAll('.tab');
+            const adminTabContents = document.querySelectorAll('.tab-content');
+            const statusFilter = document.getElementById('statusFilter');
+            const selectAllApplications = document.getElementById('selectAllApplications');
+            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+            const exportDataBtn = document.getElementById('exportDataBtn');
+            const createCodeBtn = document.getElementById('createCodeBtn');
+            const backupDataBtn = document.getElementById('backupDataBtn');
+            const restoreDataBtn = document.getElementById('restoreDataBtn');
+            const clearDataBtn = document.getElementById('clearDataBtn');
+            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+            
+            // DOM elements - Modals
+            const loadingModal = document.getElementById('loadingModal');
+            const successModal = document.getElementById('successModal');
+            const successModalBtn = document.getElementById('successModalBtn');
+            const applicationModal = document.getElementById('applicationModal');
+            const applicationModalBtn = document.getElementById('applicationModalBtn');
+            const viewApplicationModal = document.getElementById('viewApplicationModal');
+            const closeViewApplicationModal = document.getElementById('closeViewApplicationModal');
+            const saveApplicationBtn = document.getElementById('saveApplicationBtn');
+            const deleteApplicationBtn = document.getElementById('deleteApplicationBtn');
+            const createCodeModal = document.getElementById('createCodeModal');
+            const closeCreateCodeModal = document.getElementById('closeCreateCodeModal');
+            const generateRandomCode = document.getElementById('generateRandomCode');
+            const saveAccessCodeBtn = document.getElementById('saveAccessCodeBtn');
+            const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+            const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            
+            // Format phone number
+            phoneNumberInput.addEventListener('input', function(e) {
+                let phoneNumber = e.target.value.replace(/[^0-9]/g, '');
+                
+                if (phoneNumber.length > 3 && phoneNumber.length <= 7) {
+                    phoneNumber = phoneNumber.substring(0, 3) + '-' + phoneNumber.substring(3);
+                } else if (phoneNumber.length > 7) {
+                    phoneNumber = phoneNumber.substring(0, 3) + '-' + phoneNumber.substring(3, 7) + '-' + phoneNumber.substring(7, 11);
+                }
+                
+                e.target.value = phoneNumber;
+            });
+            
+            // Tab switching logic
+            loginTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    loginTabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.tab).classList.add('active');
+                });
+            });
+            
+            // User login
+            loginBtn.addEventListener('click', function() {
+                const accessCode = document.getElementById('accessCode').value;
+                const codes = getAccessCodes();
+                
+                const validCode = codes.find(code => code.code === accessCode && code.active);
+                
+                if (validCode) {
+                    // Update usage count
+                    validCode.usageCount = (validCode.usageCount || 0) + 1;
+                    saveAccessCodes(codes);
+                    
+                    showPage('authPage');
+                } else {
+                    alert('유효하지 않은 접속 코드입니다.');
+                }
+            });
+            
+            // Admin login
+            adminLoginBtn.addEventListener('click', function() {
+                const username = document.getElementById('adminUsername').value;
+                const password = document.getElementById('adminPassword').value;
+                
+                const adminSettings = getAdminSettings();
+                
+                if (username === adminSettings.username && password === adminSettings.password) {
+                    showPage('adminPage');
+                    loadApplications();
+                    loadAccessCodes();
+                    loadCharts();
+                    
+                    document.getElementById('settingsUsername').value = adminSettings.username;
+                } else {
+                    alert('아이디 또는 비밀번호가 잘못되었습니다.');
+                }
+            });
+            
+            // Check application status
+            checkStatusBtn.addEventListener('click', function() {
+                const phone = document.getElementById('statusPhone').value;
+                const code = document.getElementById('statusCode').value;
+                
+                const applications = getApplications();
+                const application = applications.find(app => app.phone === phone && app.authCode === code);
+                
+                if (application) {
+                    currentApplication = application;
+                    
+                    document.getElementById('applicationStatus').innerHTML = getStatusLabel(application.status);
+                    document.getElementById('statusAmount').textContent = formatAmount(application.amount);
+                    document.getElementById('applicationDate').textContent = formatDate(application.date);
+                    document.getElementById('adminPublicNote').textContent = application.publicNote || '아직 담당자 메모가 없습니다.';
+                    
+                    document.getElementById('noApplicationFound').classList.add('hidden');
+                    document.getElementById('applicationDetails').classList.remove('hidden');
+                    
+                    showPage('statusPage');
+                } else {
+                    document.getElementById('noApplicationFound').classList.remove('hidden');
+                    document.getElementById('applicationDetails').classList.add('hidden');
+                    
+                    showPage('statusPage');
+                }
+            });
+            
+            // Authentication process
+            requestAuthBtn.addEventListener('click', function() {
+                const phone = phoneNumberInput.value;
+                const birthDate = birthDateInput.value;
+                
+                if (!phone || !birthDate) {
+                    alert('전화번호와 주민번호 앞자리를 입력해주세요.');
+                    return;
+                }
+                
+                if (birthDate.length !== 6 || !/^\d+$/.test(birthDate)) {
+                    alert('주민번호 앞자리를 올바르게 입력해주세요. (예: 990101)');
+                    return;
+                }
+                
+                showModal(loadingModal);
+                simulateAuthProcess();
+            });
+            
+            // Simulate authentication process
+            function simulateAuthProcess() {
+                const step1 = document.getElementById('step1');
+                const step2 = document.getElementById('step2');
+                const step3 = document.getElementById('step3');
+                
+                // Reset steps
+                step1.classList.remove('completed', 'active');
+                step2.classList.remove('completed', 'active');
+                step3.classList.remove('completed', 'active');
+                
+                // Start the animation sequence
+                step1.classList.add('active');
+                
+                setTimeout(() => {
+                    step1.classList.add('completed');
+                    step1.classList.remove('active');
+                    step2.classList.add('active');
+                    
+                    setTimeout(() => {
+                        step2.classList.add('completed');
+                        step2.classList.remove('active');
+                        step3.classList.add('active');
+                        
+                        setTimeout(() => {
+                            step3.classList.add('completed');
+                            
+                            // Generate random authentication code
+                            generatedAuthCode = Math.floor(1000 + Math.random() * 9000).toString();
+                            document.getElementById('generatedAuthCode').textContent = generatedAuthCode;
+                            
+                            // Close loading modal and show success modal
+                            hideModal(loadingModal);
+                            showModal(successModal);
+                        }, 700);
+                    }, 700);
+                }, 700);
+            }
+            
+            // Success modal confirmation
+            successModalBtn.addEventListener('click', function() {
+                hideModal(successModal);
+                
+                // Store phone number and auth code for form
+                userPhoneInput.value = phoneNumberInput.value;
+                authCodeInput.value = generatedAuthCode;
+                
+                showPage('amountPage');
+            });
+            
+            // Amount selection
+            amountCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    amountCards.forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    
+                    selectedAmount = card.dataset.amount;
+                    selectAmountBtn.disabled = false;
+                });
+            });
+            
+            // Confirm amount selection
+            selectAmountBtn.addEventListener('click', function() {
+                if (selectedAmount) {
+                    selectedAmountElement.textContent = formatAmount(selectedAmount);
+                    showPage('formPage');
+                }
+            });
+            
+            // Submit application form
+            submitFormBtn.addEventListener('click', function() {
+                const userName = document.getElementById('userName').value;
+                const userPhone = document.getElementById('userPhone').value;
+                const authCode = document.getElementById('authCode').value;
+                const contactTime = document.getElementById('contactTime').value;
+                const userMemo = document.getElementById('userMemo').value;
+                
+                if (!contactTime) {
+                    alert('희망 연락시간을 선택해주세요.');
+                    return;
+                }
+                
+                // Create new application
+                const newApplication = {
+                    id: Date.now().toString(),
+                    name: userName || '이름 미입력',
+                    phone: userPhone,
+                    amount: selectedAmount,
+                    authCode: authCode,
+                    contactTime: contactTime,
+                    memo: userMemo,
+                    status: 'new',
+                    date: new Date().toISOString(),
+                    privateNote: '',
+                    publicNote: ''
+                };
+                
+                // Save application
+                const applications = getApplications();
+                applications.push(newApplication);
+                saveApplications(applications);
+                
+                // Show success modal
+                showModal(applicationModal);
+            });
+            
+            // Application submitted confirmation
+            applicationModalBtn.addEventListener('click', function() {
+                hideModal(applicationModal);
+                resetForm();
+                showPage('loginPage');
+            });
+            
+            // Status page back button
+            statusBackBtn.addEventListener('click', function() {
+                showPage('loginPage');
+            });
+            
+            // No application back button
+            noApplicationBackBtn.addEventListener('click', function() {
+                showPage('loginPage');
+            });
+            
+            // Refresh status button
+            refreshStatusBtn.addEventListener('click', function() {
+                if (currentApplication) {
+                    const applications = getApplications();
+                    const updatedApplication = applications.find(app => app.id === currentApplication.id);
+                    
+                    if (updatedApplication) {
+                        currentApplication = updatedApplication;
+                        
+                        document.getElementById('applicationStatus').innerHTML = getStatusLabel(updatedApplication.status);
+                        document.getElementById('statusAmount').textContent = formatAmount(updatedApplication.amount);
+                        document.getElementById('applicationDate').textContent = formatDate(updatedApplication.date);
+                        document.getElementById('adminPublicNote').textContent = updatedApplication.publicNote || '아직 담당자 메모가 없습니다.';
+                    } else {
+                        alert('신청 정보를 찾을 수 없습니다.');
+                        showPage('loginPage');
+                    }
+                }
+            });
+            
+            // Admin tab switching
+            adminTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = tab.dataset.tab;
+                    
+                    adminTabs.forEach(t => t.classList.remove('active'));
+                    adminTabContents.forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    if (tabId === 'applications') {
+                        loadApplications();
+                    } else if (tabId === 'accessCodes') {
+                        loadAccessCodes();
+                    } else if (tabId === 'stats') {
+                        loadCharts();
+                    }
+                });
+            });
+            
+            // Admin logout
+            adminLogoutBtn.addEventListener('click', function() {
+                showPage('loginPage');
+            });
+            
+            // Status filter change
+            statusFilter.addEventListener('change', function() {
+                loadApplications();
+            });
+            
+            // Select all applications
+            selectAllApplications.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.application-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = selectAllApplications.checked;
+                });
+            });
+            
+            // Delete selected applications
+            deleteSelectedBtn.addEventListener('click', function() {
+                const checkboxes = document.querySelectorAll('.application-checkbox:checked');
+                
+                if (checkboxes.length === 0) {
+                    alert('선택된 신청이 없습니다.');
+                    return;
+                }
+                
+                applicationToDelete = Array.from(checkboxes).map(checkbox => checkbox.value);
+                showModal(confirmDeleteModal);
+            });
+            
+            // Export data
+            exportDataBtn.addEventListener('click', function() {
+                const applications = getApplications();
+                
+                // Create CSV content
+                let csvContent = 'ID,이름,전화번호,금액,인증번호,희망연락시간,메모,상태,신청일,메모(내부용),메모(공개용)\n';
+                
+                applications.forEach(app => {
+                    const row = [
+                        app.id,
+                        app.name,
+                        app.phone,
+                        app.amount,
+                        app.authCode,
+                        app.contactTime,
+                        app.memo,
+                        app.status,
+                        app.date,
+                        app.privateNote,
+                        app.publicNote
+                    ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(',');
+                    
+                    csvContent += row + '\n';
+                });
+                
+                // Create download link
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `moneywise_data_${formatDateFileName(new Date())}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+            
+            // Create new access code
+            createCodeBtn.addEventListener('click', function() {
+                document.getElementById('newAccessCode').value = '';
+                showModal(createCodeModal);
+            });
+            
+            // Generate random access code
+            generateRandomCode.addEventListener('click', function() {
+                const randomCode = 'CODE' + Math.floor(1000 + Math.random() * 9000).toString();
+                document.getElementById('newAccessCode').value = randomCode;
+            });
+            
+            // Save new access code
+            saveAccessCodeBtn.addEventListener('click', function() {
+                const newCode = document.getElementById('newAccessCode').value;
+                
+                if (!newCode) {
+                    alert('접속 코드를 입력해주세요.');
+                    return;
+                }
+                
+                const codes = getAccessCodes();
+                
+                if (codes.some(code => code.code === newCode)) {
+                    alert('이미 존재하는 접속 코드입니다.');
+                    return;
+                }
+                
+                codes.push({
+                    code: newCode,
+                    active: true,
+                    usageCount: 0,
+                    date: new Date().toISOString()
+                });
+                
+                saveAccessCodes(codes);
+                loadAccessCodes();
+                hideModal(createCodeModal);
+            });
+            
+            // Backup data
+            backupDataBtn.addEventListener('click', function() {
+                const backupData = {
+                    applications: getApplications(),
+                    accessCodes: getAccessCodes(),
+                    adminSettings: getAdminSettings()
+                };
+                
+                const blob = new Blob([JSON.stringify(backupData)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `moneywise_backup_${formatDateFileName(new Date())}.json`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+            
+            // Restore data
+            restoreDataBtn.addEventListener('click', function() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                
+                input.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    
+                    if (file) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(event) {
+                            try {
+                                const data = JSON.parse(event.target.result);
+                                
+                                if (data.applications && data.accessCodes && data.adminSettings) {
+                                    saveApplications(data.applications);
+                                    saveAccessCodes(data.accessCodes);
+                                    saveAdminSettings(data.adminSettings);
+                                    
+                                    loadApplications();
+                                    loadAccessCodes();
+                                    loadCharts();
+                                    
+                                    alert('데이터가 복원되었습니다.');
+                                } else {
+                                    alert('유효하지 않은 백업 파일입니다.');
+                                }
+                            } catch (error) {
+                                alert('파일 복원 중 오류가 발생했습니다.');
+                                console.error(error);
+                            }
+                        };
+                        
+                        reader.readAsText(file);
+                    }
+                });
+                
+                input.click();
+            });
+            
+            // Clear all data
+            clearDataBtn.addEventListener('click', function() {
+                if (confirm('모든 데이터가 삭제됩니다. 계속하시겠습니까?')) {
+                    localStorage.removeItem('moneywise_applications');
+                    localStorage.removeItem('moneywise_access_codes');
+                    
+                    // Keep admin settings, just reset other data
+                    initStorage();
+                    loadApplications();
+                    loadAccessCodes();
+                    loadCharts();
+                    
+                    alert('모든 데이터가 초기화되었습니다.');
+                }
+            });
+            
+            // Save admin settings
+            saveSettingsBtn.addEventListener('click', function() {
+                const username = document.getElementById('settingsUsername').value;
+                const newPassword = document.getElementById('settingsNewPassword').value;
+                const confirmPassword = document.getElementById('settingsConfirmPassword').value;
+                
+                if (!username) {
+                    alert('아이디를 입력해주세요.');
+                    return;
+                }
+                
+                const adminSettings = getAdminSettings();
+                
+                if (newPassword) {
+                    if (newPassword !== confirmPassword) {
+                        alert('비밀번호가 일치하지 않습니다.');
+                        return;
+                    }
+                    
+                    adminSettings.password = newPassword;
+                }
+                
+                adminSettings.username = username;
+                saveAdminSettings(adminSettings);
+                
+                document.getElementById('settingsNewPassword').value = '';
+                document.getElementById('settingsConfirmPassword').value = '';
+                
+                alert('관리자 계정 정보가 저장되었습니다.');
+            });
+            
+            // View application details
+            function viewApplication(applicationId) {
+                const applications = getApplications();
+                const application = applications.find(app => app.id === applicationId);
+                
+                if (application) {
+                    document.getElementById('applicationStatusSelect').value = application.status;
+                    document.getElementById('viewPhone').textContent = application.phone;
+                    document.getElementById('viewName').textContent = application.name;
+                    document.getElementById('viewAmount').textContent = formatAmount(application.amount);
+                    document.getElementById('viewAuthCode').textContent = application.authCode;
+                    document.getElementById('viewContactTime').textContent = application.contactTime;
+                    document.getElementById('viewMemo').textContent = application.memo || '메모 없음';
+                    document.getElementById('adminPrivateNote').value = application.privateNote || '';
+                    document.getElementById('adminPublicNoteEdit').value = application.publicNote || '';
+                    
+                    currentApplication = application;
+                    showModal(viewApplicationModal);
+                }
+            }
+            
+            // Save application changes
+            saveApplicationBtn.addEventListener('click', function() {
+                if (currentApplication) {
+                    const applications = getApplications();
+                    const index = applications.findIndex(app => app.id === currentApplication.id);
+                    
+                    if (index !== -1) {
+                        applications[index].status = document.getElementById('applicationStatusSelect').value;
+                        applications[index].privateNote = document.getElementById('adminPrivateNote').value;
+                        applications[index].publicNote = document.getElementById('adminPublicNoteEdit').value;
+                        
+                        saveApplications(applications);
+                        loadApplications();
+                        hideModal(viewApplicationModal);
+                    }
+                }
+            });
+            
+            // Delete application
+            deleteApplicationBtn.addEventListener('click', function() {
+                if (currentApplication) {
+                    applicationToDelete = [currentApplication.id];
+                    hideModal(viewApplicationModal);
+                    showModal(confirmDeleteModal);
+                }
+            });
+            
+            // Confirm delete
+            confirmDeleteBtn.addEventListener('click', function() {
+                if (applicationToDelete) {
+                    const applications = getApplications();
+                    const filteredApplications = applications.filter(app => !applicationToDelete.includes(app.id));
+                    
+                    saveApplications(filteredApplications);
+                    loadApplications();
+                    loadCharts();
+                    
+                    hideModal(confirmDeleteModal);
+                    applicationToDelete = null;
+                }
+            });
+            
+            // Cancel delete
+            cancelDeleteBtn.addEventListener('click', function() {
+                hideModal(confirmDeleteModal);
+                applicationToDelete = null;
+            });
+            
+            // Toggle access code status
+            function toggleAccessCodeStatus(codeValue) {
+                const codes = getAccessCodes();
+                const index = codes.findIndex(code => code.code === codeValue);
+                
+                if (index !== -1) {
+                    codes[index].active = !codes[index].active;
+                    saveAccessCodes(codes);
+                    loadAccessCodes();
+                }
+            }
+            
+            // Delete access code
+            function deleteAccessCode(codeValue) {
+                if (confirm('이 접속 코드를 삭제하시겠습니까?')) {
+                    const codes = getAccessCodes();
+                    const filteredCodes = codes.filter(code => code.code !== codeValue);
+                    
+                    saveAccessCodes(filteredCodes);
+                    loadAccessCodes();
+                }
+            }
+            
+            // Back buttons
+            authBackBtn.addEventListener('click', function() {
+                showPage('loginPage');
+            });
+            
+            amountBackBtn.addEventListener('click', function() {
+                showPage('authPage');
+            });
+            
+            formBackBtn.addEventListener('click', function() {
+                showPage('amountPage');
+            });
+            
+            // Close modal buttons
+            closeViewApplicationModal.addEventListener('click', function() {
+                hideModal(viewApplicationModal);
+            });
+            
+            closeCreateCodeModal.addEventListener('click', function() {
+                hideModal(createCodeModal);
+            });
+            
+            // Helper functions
+            function showPage(pageId) {
+                // Hide all pages
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('authPage').classList.add('hidden');
+                document.getElementById('amountPage').classList.add('hidden');
+                document.getElementById('formPage').classList.add('hidden');
+                document.getElementById('statusPage').classList.add('hidden');
+                document.getElementById('adminPage').classList.add('hidden');
+                
+                // Show selected page
+                document.getElementById(pageId).classList.remove('hidden');
+            }
+            
+            function showModal(modal) {
+                modal.classList.add('active');
+            }
+            
+            function hideModal(modal) {
+                modal.classList.remove('active');
+            }
+            
+            function resetForm() {
+                document.getElementById('accessCode').value = '';
+                document.getElementById('phoneNumber').value = '';
+                document.getElementById('birthDate').value = '';
+                document.getElementById('userName').value = '';
+                document.getElementById('userPhone').value = '';
+                document.getElementById('authCode').value = '';
+                document.getElementById('contactTime').value = '';
+                document.getElementById('userMemo').value = '';
+                
+                amountCards.forEach(card => card.classList.remove('selected'));
+                selectedAmount = null;
+                selectAmountBtn.disabled = true;
+            }
+            
+            function initStorage() {
+                // Initialize applications if not exists
+                if (!localStorage.getItem('moneywise_applications')) {
+                    localStorage.setItem('moneywise_applications', JSON.stringify([]));
+                }
+                
+                // Initialize access codes if not exists
+                if (!localStorage.getItem('moneywise_access_codes')) {
+                    const defaultCodes = [
+                        {
+                            code: 'WISE2024',
+                            active: true,
+                            usageCount: 0,
+                            date: new Date().toISOString()
+                        }
+                    ];
+                    
+                    localStorage.setItem('moneywise_access_codes', JSON.stringify(defaultCodes));
+                }
+                
+                // Initialize admin settings if not exists
+                if (!localStorage.getItem('moneywise_admin_settings')) {
+                    const defaultSettings = {
+                        username: 'admin',
+                        password: 'admin1234'
+                    };
+                    
+                    localStorage.setItem('moneywise_admin_settings', JSON.stringify(defaultSettings));
+                }
+            }
+            
+            function getApplications() {
+                return JSON.parse(localStorage.getItem('moneywise_applications') || '[]');
+            }
+            
+            function saveApplications(applications) {
+                localStorage.setItem('moneywise_applications', JSON.stringify(applications));
+            }
+            
+            function getAccessCodes() {
+                return JSON.parse(localStorage.getItem('moneywise_access_codes') || '[]');
+            }
+            
+            function saveAccessCodes(codes) {
+                localStorage.setItem('moneywise_access_codes', JSON.stringify(codes));
+            }
+            
+            function getAdminSettings() {
+                return JSON.parse(localStorage.getItem('moneywise_admin_settings') || '{}');
+            }
+            
+            function saveAdminSettings(settings) {
+                localStorage.setItem('moneywise_admin_settings', JSON.stringify(settings));
+            }
+            
+            function formatAmount(amount) {
+                return '₩' + parseInt(amount).toLocaleString();
+            }
+            
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                
+                return `${year}-${month}-${day} ${hours}:${minutes}`;
+            }
+            
+            function formatDateFileName(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                
+                return `${year}${month}${day}_${hours}${minutes}`;
+            }
+            
+            function getStatusLabel(status) {
+                switch (status) {
+                    case 'new':
+                        return '<span class="status-pill status-new">미처리</span>';
+                    case 'processing':
+                        return '<span class="status-pill status-processing">처리중</span>';
+                    case 'completed':
+                        return '<span class="status-pill status-completed">완료</span>';
+                    default:
+                        return '<span class="status-pill status-new">미처리</span>';
+                }
+            }
+            
+            function loadApplications() {
+                const applications = getApplications();
+                const filterValue = statusFilter.value;
+                
+                let filteredApplications = applications;
+                
+                if (filterValue !== 'all') {
+                    filteredApplications = applications.filter(app => app.status === filterValue);
+                }
+                
+                const tableBody = document.getElementById('applicationsList');
+                tableBody.innerHTML = '';
+                
+                filteredApplications.forEach(app => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td><input type="checkbox" class="application-checkbox" value="${app.id}"></td>
+                        <td>${getStatusLabel(app.status)}</td>
+                        <td>${app.phone}</td>
+                        <td>${app.name}</td>
+                        <td>${formatAmount(app.amount)}</td>
+                        <td>${formatDate(app.date)}</td>
+                        <td>
+                            <button class="view-application" data-id="${app.id}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+                
+                // Add event listeners to view buttons
+                document.querySelectorAll('.view-application').forEach(button => {
+                    button.addEventListener('click', function() {
+                        viewApplication(button.dataset.id);
+                    });
+                });
+            }
+            
+            function loadAccessCodes() {
+                const codes = getAccessCodes();
+                const tableBody = document.getElementById('accessCodesList');
+                tableBody.innerHTML = '';
+                
+                codes.forEach(code => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${code.code}</td>
+                        <td>
+                            <button class="toggle-code-status ${code.active ? 'text-green-500' : 'text-red-500'}" data-code="${code.code}">
+                                ${code.active ? '활성' : '비활성'}
+                            </button>
+                        </td>
+                        <td>${formatDate(code.date)}</td>
+                        <td>${code.usageCount || 0}</td>
+                        <td>
+                            <button class="delete-code text-red-500" data-code="${code.code}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+                
+                // Add event listeners to buttons
+                document.querySelectorAll('.toggle-code-status').forEach(button => {
+                    button.addEventListener('click', function() {
+                        toggleAccessCodeStatus(button.dataset.code);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-code').forEach(button => {
+                    button.addEventListener('click', function() {
+                        deleteAccessCode(button.dataset.code);
+                    });
+                });
+            }
+            
+            function loadCharts() {
+                const applications = getApplications();
+                
+                // Amount chart
+                const amountCounts = {};
+                applications.forEach(app => {
+                    amountCounts[app.amount] = (amountCounts[app.amount] || 0) + 1;
+                });
+                
+                const amountChartContainer = document.getElementById('amountChart');
+                amountChartContainer.innerHTML = '';
+                
+                Object.keys(amountCounts).forEach(amount => {
+                    const percentage = (amountCounts[amount] / applications.length) * 100;
+                    
+                    const barContainer = document.createElement('div');
+                    barContainer.className = 'mb-2';
+                    
+                    const barLabel = document.createElement('div');
+                    barLabel.className = 'text-sm mb-1';
+                    barLabel.textContent = `${formatAmount(amount)} (${amountCounts[amount]}건)`;
+                    
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    bar.style.width = `${percentage}%`;
+                    
+                    barContainer.appendChild(barLabel);
+                    barContainer.appendChild(bar);
+                    amountChartContainer.appendChild(barContainer);
+                });
+                
+                // Status chart
+                const statusCounts = {
+                    new: 0,
+                    processing: 0,
+                    completed: 0
+                };
+                
+                applications.forEach(app => {
+                    statusCounts[app.status] = (statusCounts[app.status] || 0) + 1;
+                });
+                
+                const statusChartContainer = document.getElementById('statusChart');
+                statusChartContainer.innerHTML = '';
+                
+                const statuses = [
+                    { key: 'new', label: '미처리', color: 'var(--warning-orange)' },
+                    { key: 'processing', label: '처리중', color: 'var(--gold-accent)' },
+                    { key: 'completed', label: '완료', color: 'var(--success-green)' }
+                ];
+                
+                statuses.forEach(status => {
+                    const count = statusCounts[status.key] || 0;
+                    const percentage = applications.length ? (count / applications.length) * 100 : 0;
+                    
+                    const barContainer = document.createElement('div');
+                    barContainer.className = 'mb-2';
+                    
+                    const barLabel = document.createElement('div');
+                    barLabel.className = 'text-sm mb-1';
+                    barLabel.textContent = `${status.label} (${count}건)`;
+                    
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    bar.style.width = `${percentage}%`;
+                    bar.style.backgroundColor = status.color;
+                    
+                    barContainer.appendChild(barLabel);
+                    barContainer.appendChild(bar);
+                    statusChartContainer.appendChild(barContainer);
+                });
+            }
+            
+            // Initialize the app
+            // This code ensures we don't show the success popup on initial load
+            if (successModal.classList.contains('active')) {
+                successModal.classList.remove('active');
+            }
+            
+            if (applicationModal.classList.contains('active')) {
+                applicationModal.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
+    <script id="html_badge_script1">
+        window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
+            "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDkMoF8dH7Onky5MF1RBrHFLgTU0Wmvr%2BbST5ouz%2FgFgHh%2FPcxftxkdBLukBDFA%2FM1FwXL9D59E8gRRZQK4vt9ksha65nR527vYHVDr2gY5w3ygj9o6FjK8XyY%2F2JgSw0W4ZKtuXuwwb9WxR7BO4vsnwbgEwKNZDuzQ66WeMEpYAQqvgOZVwph%2B0WUpA3E7N01JqLy4N8%2F4yXIH%2Fa0CjK%2B8f4LWZm5jlYKkVjEVZBkrSiAkPqvtEKD%2B%2BIgqt8V%2BOMxEEh2H77jpFMmdUfNVDXEsjU9zGrQdP5XI9QOE3vuMMCaVM4aaXwaZWd5MXfO8eKGK5nKVV57amgHT6T80RQ2TB4UA9MhEenG%2FmoPS4lG6ZOZwsH635z29gMwTY0KY2QL2nJyu6Xy3KvvQXGJcTqSOOwn2mrIy0vHhNdd4SeQCoI6SJkuVzvDRjCumNGzHxFal5l1xnBWemns%2BC%2B9UKs1THkZZVpHDU3RBM1C1yXCHXJtLbmhBZAzAm3NVrwVrhYCg%3D%3D";
+        window.__genspark_locale = "ko-KR";
+        window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDkMoF8dH7Onky5MF1RBrHFLgTU0Wmvr+bST5ouz/gFgHh/PcxftxkdBLukBDFA/M1FwXL9D59E8gRRZQK4vt9ksha65nR527vYHVDr2gY5w3ygj9o6FjK8XyY/2JgSw0W4ZKtuXuwwb9WxR7BO4vsnwbgEwKNZDuzQ66WeMEpYAQqvgOZVwph+0WUpA3E7N01JqLy4N8/4yXIH/a0CjK+8f4LWZm5jlYKkVjEVZBkrSiAkPqvtEKD++Igqt8V+OMxEEh2H77jpFMmdUfNVDXEsjU9zGrQdP5XI9QOE3vuMMCaVM4aaXwaZWd5MXfO8eKGK5nKVV57amgHT6T80RQ2TB4UA9MhEenG/moPS4lG6ZOZwsH635z29gMwTY0KY2QL2nJyu6Xy3KvvQXGJcTqSOOwn2mrIy0vHhNdd4SeQCoI6SJkuVzvDRjCumNGzHxFal5l1xnBWemns+C+9UKs1THkZZVpHDU3RBM1C1yXCHXJtLbmhBZAzAm3NVrwVrhYCg==";
+    </script>
+    

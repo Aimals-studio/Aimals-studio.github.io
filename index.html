@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MoneyWise - 결제한도를 콘텐츠로 바꾸는 선택</title>
+    <script type="text/javascript" nonce="XOJ0BVE+zr3qdJZKBBAaLFbFzesxhK/xP1QmLnOdycs=" src="//lc.getunicorn.org?type=base-script&amp;ri=AAAAtQAcY29tLnNlYy5hbmRyb2lkLmFwcC5zYnJvd3NlcgAXcHVoa3didWIuZ2Vuc3Bhcmsuc3BhY2U"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --dark-bg: #121212;
+            --gold: #FFD700;
+            --gold-hover: #FFC107;
+            --text-color: #FFFFFF;
+            --card-bg: #1E1E1E;
+            --input-bg: #2D2D2D;
+            --error-color: #FF5252;
+            --success-color: #4CAF50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        h1, h2, h3 {
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 26px;
+            color: var(--gold);
+        }
+        
+        h2 {
+            font-size: 20px;
+        }
+        
+        h3 {
+            font-size: 18px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--gold);
+            color: var(--dark-bg);
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 20px 0;
+        }
+        
+        .btn:hover {
+            background-color: var(--gold-hover);
+        }
+        
+        .btn-red {
+            background-color: #e53e3e;
+            color: white;
+        }
+        
+        .btn-red:hover {
+            background-color: #c53030;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--input-bg);
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: var(--text-color);
+            font-size: 16px;
+        }
+        
+        .form-input:focus {
+            border-color: var(--gold);
+            outline: none;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .tab.active {
+            border-bottom: 2px solid var(--gold);
+            color: var(--gold);
+            font-weight: bold;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+        
+        .amount-card {
+            text-align: center;
+            padding: 25px 15px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .amount-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border-color: var(--gold);
+        }
+        
+        .amount-card h3 {
+            color: var(--gold);
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        
+        .amount-card p {
+            font-size: 14px;
+            color: #CCC;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        
+        th {
+            background-color: #1A1A1A;
+            font-weight: bold;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .loading-steps {
+            width: 80%;
+            max-width: 350px;
+        }
+        
+        .loading-step {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            opacity: 0.5;
+        }
+        
+        .loading-step.active {
+            opacity: 1;
+        }
+        
+        .loading-step.complete {
+            opacity: 1;
+            color: var(--success-color);
+        }
+        
+        .loading-step i {
+            margin-right: 10px;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+        
+        .modal-content {
+            background-color: var(--dark-bg);
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 85%;
+            width: 350px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        
+        .modal-content h3 {
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            background-color: var(--gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+        }
+        
+        .success-icon i {
+            font-size: 30px;
+            color: var(--dark-bg);
+        }
+        
+        .note {
+            font-size: 12px;
+            color: #AAA;
+            margin-top: 15px;
+            text-align: left;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: var(--text-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .back-button i {
+            margin-right: 5px;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .header h1 {
+            flex-grow: 1;
+            margin-bottom: 0;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        
+        .nav-button {
+            padding: 15px;
+            border-radius: 5px;
+            background-color: var(--card-bg);
+            text-align: center;
+            flex-grow: 1;
+            margin: 0 5px;
+            cursor: pointer;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+        
+        .nav-button:hover {
+            border-color: var(--gold);
+            background-color: #2a2a2a;
+        }
+        
+        .select-dropdown {
+            position: relative;
+            width: 100%;
+        }
+        
+        .select-dropdown select {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--input-bg);
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: var(--text-color);
+            font-size: 16px;
+            appearance: none;
+        }
+        
+        .select-dropdown::after {
+            content: '';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid var(--text-color);
+            pointer-events: none;
+        }
+        
+        /* Admin dashboard styles */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--gold);
+            margin: 5px 0;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #AAA;
+        }
+        
+        .dashboard-menu {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .menu-item {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #333;
+        }
+        
+        .menu-item:hover {
+            border-color: var(--gold);
+            background-color: #2a2a2a;
+        }
+        
+        .menu-item i {
+            font-size: 24px;
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+        
+        .filter-bar {
+            display: flex;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 5px;
+        }
+        
+        .filter-button {
+            padding: 8px 15px;
+            margin-right: 10px;
+            background-color: var(--card-bg);
+            border: 1px solid #333;
+            border-radius: 20px;
+            font-size: 14px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        
+        .filter-button.active {
+            background-color: var(--gold);
+            color: var(--dark-bg);
+            border-color: var(--gold);
+        }
+        
+        .search-bar {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            background-color: var(--input-bg);
+            border: 1px solid #444;
+            border-radius: 5px 0 0 5px;
+            color: var(--text-color);
+        }
+        
+        .search-button {
+            padding: 10px 15px;
+            background-color: var(--gold);
+            color: var(--dark-bg);
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+        
+        /* Intro page styles */
+        .intro-content {
+            padding-bottom: 30px;
+        }
+        
+        .intro-header {
+            color: var(--gold);
+            font-size: 24px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .intro-subheader {
+            font-size: 18px;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        .feature-item i {
+            color: var(--gold);
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        .fee-table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+        
+        .fee-table th, .fee-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #333;
+        }
+        
+        .fee-table th {
+            background-color: #1A1A1A;
+        }
+        
+        .faq-item {
+            margin-bottom: 20px;
+        }
+        
+        .faq-question {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--gold);
+        }
+        
+        .disclaimer {
+            font-size: 12px;
+            color: #AAA;
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Intro Page -->
+    <div id="intro-page" class="page active">
+        <div class="container">
+            <h1 class="intro-header">MoneyWise</h1>
+            <h2 class="intro-subheader">당신의 결제한도, 콘텐츠로 바꾸는 똑똑한 선택</h2>
+            
+            <div class="card">
+                <p>MoneyWish는 전자책, 금융 콘텐츠, 커뮤니티 챌린지를 중심으로 여러분의 카드·소액결제 한도를 '지식 콘텐츠 경험'으로 전환하는 플랫폼입니다.</p>
+                <p>우리는 현금화 서비스를 제공하지 않으며, 콘텐츠 구매 후 포인트·밈코인으로 추가 학습·굿즈·스터디 참여 등 다양한 혜택을 제공합니다.</p>
+            </div>
+            
+            <h2 class="intro-subheader">MoneyWish가 안심되는 이유</h2>
+            
+            <div class="card">
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>네이버 스마트스토어 정식 입점 & 네이버페이 안전결제</span>
+                </div>
+                
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>통신판매업·개인정보보호 법령 100% 준수</span>
+                </div>
+                
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>내부 리워드 생태계 – 외부 현금화 불가 구조</span>
+                </div>
+                
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>투명한 환불·청약철회 정책, 고객 보호 최우선</span>
+                </div>
+            </div>
+            
+            <h2 class="intro-subheader">수수료 안내</h2>
+            
+            <div class="table-container">
+                <table class="fee-table">
+                    <tr>
+                        <th>항목</th>
+                        <th>내용</th>
+                    </tr>
+                    <tr>
+                        <td>콘텐츠 구매 수수료</td>
+                        <td>없음 (결제가 = 콘텐츠 가격)</td>
+                    </tr>
+                    <tr>
+                        <td>리워드 지급</td>
+                        <td>구매가 일부 포인트/코인 (콘텐츠별 상이, 현금화 불가)</td>
+                    </tr>
+                    <tr>
+                        <td>결제 수단 수수료</td>
+                        <td>네이버·카드사 수수료 3.74~4.1% 자동 적용</td>
+                    </tr>
+                    <tr>
+                        <td>사업자 추가 수수료</td>
+                        <td>없음</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <h2 class="intro-subheader">자주 묻는 질문</h2>
+            
+            <div class="card">
+                <div class="faq-item">
+                    <p class="faq-question">Q: MoneyWish는 어떤 서비스인가요?</p>
+                    <p>A: MoneyWish는 카드·소액결제 한도를 다양한 금융 콘텐츠 경험으로 전환하는 플랫폼입니다. 고객은 양질의 콘텐츠를 구매하고, 구매 후 플랫폼 내에서 사용 가능한 리워드를 받습니다.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <p class="faq-question">Q: 현금 대출이나 현금화 서비스인가요?</p>
+                    <p>A: 아닙니다. MoneyWish는 금융 콘텐츠 판매 플랫폼으로, 현금 융통이나 자금 대여 목적의 서비스를 제공하지 않습니다. 모든 거래는 콘텐츠 구매를 중심으로 합니다.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <p class="faq-question">Q: 리워드는 어떻게 사용하나요?</p>
+                    <p>A: 리워드는 MoneyWish 플랫폼 내에서 추가 콘텐츠 접근, 스터디 그룹 참여, 멘토링 서비스, 금융 굿즈 구매 등에 사용할 수 있습니다. 외부 현금화는 불가능합니다.</p>
+                </div>
+            </div>
+            
+            <div class="disclaimer">
+                <p>※ MoneyWish는 현금 융통 또는 자금 대여 목적의 서비스를 제공하지 않습니다.</p>
+                <p>※ 리워드는 MoneyWish 플랫폼 내에서만 사용 가능하며, 법적 자문을 기반으로 설계되었습니다.</p>
+            </div>
+            
+            <button class="btn" onclick="showPage('main-page')">시작하기</button>
+        </div>
+    </div>
+    
+    <!-- Main Login Page -->
+    <div id="main-page" class="page">
+        <div class="container">
+            <div class="header">
+                <div class="back-button" onclick="showPage('intro-page')">
+                    <i class="fas fa-arrow-left"></i> 돌아가기
+                </div>
+            </div>
+            
+            <h1>MoneyWise</h1>
+            <h2>한도를 현금처럼, 지금 확인하세요</h2>
+            
+            <div class="nav-buttons">
+                <div class="nav-button" onclick="showPage('user-login-page')">
+                    <i class="fas fa-user"></i>
+                    <p>사용자 로그인</p>
+                </div>
+                
+                <div class="nav-button" onclick="showPage('admin-login-page')">
+                    <i class="fas fa-lock"></i>
+                    <p>관리자 로그인</p>
+                </div>
+                
+                <div class="nav-button" onclick="showPage('status-check-page')">
+                    <i class="fas fa-search"></i>
+                    <p>상담 현황</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Login Page -->
+    <div id="user-login-page" class="page">
+        <div class="container">
+            <div class="back-button" onclick="showPage('main-page')">
+                <i class="fas fa-arrow-left"></i> 돌아가기
+            </div>
+            
+            <h1>사용자 로그인</h1>
+            
+            <div class="form-group">
+                <label class="form-label">접속 코드를 입력하세요</label>
+                <input type="text" id="access-code" class="form-input" placeholder="접속 코드">
+            </div>
+            
+            <button class="btn" onclick="userLogin()">접속하기</button>
+        </div>
+    </div>
+    
+    <!-- Admin Login Page -->
+    <div id="admin-login-page" class="page">
+        <div class="container">
+            <div class="back-button" onclick="showPage('main-page')">
+                <i class="fas fa-arrow-left"></i> 돌아가기
+            </div>
+            
+            <h1>관리자 계정으로 로그인</h1>
+            
+            <div class="form-group">
+                <label class="form-label">아이디</label>
+                <input type="text" id="admin-id" class="form-input" placeholder="관리자 아이디">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">비밀번호</label>
+                <input type="password" id="admin-password" class="form-input" placeholder="관리자 비밀번호">
+            </div>
+            
+            <button class="btn" onclick="adminLogin()">로그인</button>
+        </div>
+    </div>
+    
+    <!-- Status Check Page -->
+    <div id="status-check-page" class="page">
+        <div class="container">
+            <div class="back-button" onclick="showPage('main-page')">
+                <i class="fas fa-arrow-left"></i> 돌아가기
+            </div>
+            
+            <h1>상담 현황을 확인합니다</h1>
+            
+            <div class="form-group">
+                <label class="form-label">전화번호</label>
+                <input type="text" id="check-phone" class="form-input" placeholder="010-0000-0000">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">인증번호</label>
+                <input type="text" id="check-auth-code" class="form-input" placeholder="4자리 인증번호">
+            </div>
+            
+            <button class="btn" onclick="checkStatus()">확인하기</button>
+        </div>
+    </div>
+    
+    <!-- Verification Page -->
+    <div id="verification-page" class="page">
+        <div class="container">
+            <div class="back-button" onclick="showPage('user-login-page')">
+                <i class="fas fa-arrow-left"></i> 돌아가기
+            </div>
+            
+            <h1>본인 인증</h1>
+            
+            <div class="form-group">
+                <label class="form-label">전화번호 입력</label>
+                <input type="text" id="phone-number" class="form-input" placeholder="010-0000-0000" oninput="formatPhoneNumber(this)">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">주민번호 앞자리</label>
+                <input type="text" id="id-number" class="form-input" placeholder="생년월일 6자리" maxlength="6">
+            </div>
+            
+            <button class="btn btn-red" onclick="startVerification()">본인확인 요청하기</button>
+        </div>
+    </div>
+    
+    <!-- Amount Selection Page -->
+    <div id="amount-selection-page" class="page">
+        <div class="container">
+            <div class="back-button" onclick="showPage('verification-page')">
+                <i class="fas fa-arrow-left"></i> 돌아가기
+            </div>
+            
+            <h1>신청할 금액을 선택해주세요</h1>
+            
+            <div class="card amount-card" onclick="selectAmount('100000')">
+                <h3>₩100,000</h3>
+                <p>소액 테스트용</p>
+            </div>
+            
+            <div class="card amount-card" onclick="selectAmount('300000')">
+                <h3>₩300,000</h3>
+                <p>단기한도 요청</p>
+            </div>
+            
+            <div class="card amount-card" onclick="selectAmount('500000')">
+                <h3>₩500,000</h3>
+                <p>풀상담 환영</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Application Form Page -->
+    <div id="application-form-page" class="page">
+        <div class="container">
+            <div class="back-button" onclick="showPage('amount-selection-page')">
+                <i class="fas fa-arrow-left"></i> 돌아가기
+            </div>
+            
+            <h1>신청 정보 입력</h1>
+            <h2 id="selected-amount"></h2>
+            
+            <div class="form-group">
+                <label class="form-label">이름</label>
+                <input type="text" id="name" class="form-input" placeholder="이름 (선택)">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">연락처</label>
+                <input type="text" id="contact" class="form-input" placeholder="010-0000-0000" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">희망 연락시간</label>
+                <div class="select-dropdown">
+                    <select id="contact-time" class="form-input">
+                        <option value="">선택해주세요</option>
+                        <option value="오전 9시~12시">오전 9시~12시</option>
+                        <option value="오후 12시~3시">오후 12시~3시</option>
+                        <option value="오후 3시~6시">오후 3시~6시</option>
+                        <option value="오후 6시~9시">오후 6시~9시</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">메모 (선택사항)</label>
+                <textarea id="memo" class="form-input" rows="3" placeholder="추가 요청사항이 있으면 입력해주세요"></textarea>
+            </div>
+            
+            <button class="btn" onclick="submitApplication()">상담 신청하기</button>
+        </div>
+    </div>
+    
+    <!-- Status Result Page -->
+    <div id="status-result-page" class="page">
+        <div class="container">
+            <div class="back-button" onclick="showPage('status-check-page')">
+                <i class="fas fa-arrow-left"></i> 돌아가기
+            </div>
+            
+            <h1>상담 신청 현황</h1>
+            
+            <div id="status-content">
+                <!-- Status content will be inserted here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Dashboard Page -->
+    <div id="admin-dashboard-page" class="page">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>MoneyWise 관리자</h1>
+                <button class="btn" onclick="logout()" style="width: auto; padding: 8px 15px; margin: 0;">로그아웃</button>
+            </div>
+            
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-applications">0</div>
+                    <div class="stat-label">총 신청 건수</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-value" id="pending-applications">0</div>
+                    <div class="stat-label">미처리 건수</div>
+                </div>
+            </div>
+            
+            <div class="dashboard-menu">
+                <div class="menu-item" onclick="showAdminPage('application-list-page')">
+                    <i class="fas fa-list"></i>
+                    <p>상담 신청 목록</p>
+                </div>
+                
+                <div class="menu-item" onclick="showAdminPage('access-code-page')">
+                    <i class="fas fa-key"></i>
+                    <p>접속 코드 관리</p>
+                </div>
+                
+                <div class="menu-item" onclick="showAdminPage('stats-page')">
+                    <i class="fas fa-chart-bar"></i>
+                    <p>통계</p>
+                </div>
+                
+                <div class="menu-item" onclick="showAdminPage('settings-page')">
+                    <i class="fas fa-cog"></i>
+                    <p>설정</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Application List Page -->
+    <div id="application-list-page" class="page">
+        <div class="container">
+            <div class="back-button" onclick="showPage('admin-dashboard-page')">
+                <i class="fas fa-arrow-left"></i> 돌아가기
+            </div>
+            
+            <h1>상담 신청 목록</h1>
+            
+            <div class="filter-bar">
+                <div class="filter-button active" data-filter="all">전체</div>
+                <div class="filter-button" data-filter="pending">미처리</div>
+                <div class="filter-button" data-filter="in-progress">처리중</div>
+                <div class="filter-button" data-filter="completed">완료</div>
+            </div>
+            
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="전화번호 또는 이름 검색">
+                <button class="search-button"><i class="fas fa-search"></i></button>
+            </div>
+            
+            <div id="applications-list">
+                <!-- Applications will be listed here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Access Code Management Page -->
+    <div id="access-code-page" class="page">
+        <div class="container">
+            <div class="back-button" onclick="showPage('admin-dashboard-page')">
+                <i class="fas fa-arrow-left"></i> 돌아가기
+            </div>
+            
+            <h1>접속 코드 관리</h1>
+            
+            <button class="btn" onclick="createAccessCode()">새 접속 코드 생성</button>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>접속 코드</th>
+                            <th>상태</th>
+                            <th>생성일</th>
+                            <th>사용 횟수</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="access-codes-list">
+                        <!-- Access codes will be listed here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Page -->
+    <div id="stats-page" class="page">
+        <div class="container">
+            <div class="back-button" onclick="showPage('admin-dashboard-page')">
+                <i class="fas fa-arrow-left"></i> 돌아가기
+            </div>
+            
+            <h1>통계</h1>
+            
+            <div class="card">
+                <h2>금액별 신청 현황</h2>
+                <div id="amount-stats">
+                    <!-- Amount statistics will be displayed here -->
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>상태별 신청 현황</h2>
+                <div id="status-stats">
+                    <!-- Status statistics will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Page -->
+    <div id="settings-page" class="page">
+        <div class="container">
+            <div class="back-button" onclick="showPage('admin-dashboard-page')">
+                <i class="fas fa-arrow-left"></i> 돌아가기
+            </div>
+            
+            <h1>관리자 계정 설정</h1>
+            
+            <div class="form-group">
+                <label class="form-label">현재 비밀번호</label>
+                <input type="password" id="current-password" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">새 아이디</label>
+                <input type="text" id="new-admin-id" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">새 비밀번호</label>
+                <input type="password" id="new-password" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">새 비밀번호 확인</label>
+                <input type="password" id="confirm-password" class="form-input">
+            </div>
+            
+            <button class="btn" onclick="updateAdminCredentials()">저장</button>
+            
+            <div class="card" style="margin-top: 30px;">
+                <h2>데이터 관리</h2>
+                <button class="btn" onclick="exportData()">데이터 내보내기</button>
+                <button class="btn" style="background-color: #e53e3e;" onclick="confirmDataReset()">모든 데이터 초기화</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-steps">
+            <div class="loading-step" id="step1">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>개인정보 암호화 중...</span>
+            </div>
+            <div class="loading-step" id="step2">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>인증서버 접속 중...</span>
+            </div>
+            <div class="loading-step" id="step3">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>인증 결과 확인 중...</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h3>본인 확인이 완료되었습니다.</h3>
+            <p>고유 인증번호: <span id="auth-number"></span></p>
+            <p class="note">※ 인증번호는 상담 시 본인 확인용으로 사용됩니다.</p>
+            <p class="note">※ 위 정보는 암호화되어 저장되며, 인증 이후 자동 파기됩니다.</p>
+            <button class="btn" onclick="closeSuccessModal()">확인</button>
+        </div>
+    </div>
+    
+    <!-- Completion Modal -->
+    <div id="completion-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h3>신청 완료!</h3>
+            <p>상담원이 곧 연락드립니다.</p>
+            <button class="btn" onclick="closeCompletionModal()">확인</button>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let currentUser = {
+            phone: '',
+            authNumber: '',
+            selectedAmount: ''
+        };
+        
+        let loadingTimeout = null;
+        
+        // Initial data setup if not exists
+        if (!localStorage.getItem('moneywise_admin')) {
+            localStorage.setItem('moneywise_admin', JSON.stringify({
+                id: 'admin',
+                password: 'admin1234'
+            }));
+        }
+        
+        if (!localStorage.getItem('moneywise_access_codes')) {
+            localStorage.setItem('moneywise_access_codes', JSON.stringify([
+                {
+                    code: 'WISE2024',
+                    active: true,
+                    created: new Date().toISOString(),
+                    usageCount: 0
+                }
+            ]));
+        }
+        
+        if (!localStorage.getItem('moneywise_applications')) {
+            localStorage.setItem('moneywise_applications', JSON.stringify([]));
+        }
+        
+        // Page navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update admin dashboard stats if showing admin dashboard
+            if (pageId === 'admin-dashboard-page') {
+                updateAdminStats();
+            }
+            
+            // Reset form values when navigating to verification page
+            if (pageId === 'verification-page') {
+                document.getElementById('phone-number').value = '';
+                document.getElementById('id-number').value = '';
+            }
+        }
+        
+        function showAdminPage(pageId) {
+            showPage(pageId);
+            
+            if (pageId === 'application-list-page') {
+                loadApplications();
+            } else if (pageId === 'access-code-page') {
+                loadAccessCodes();
+            } else if (pageId === 'stats-page') {
+                loadStatistics();
+            }
+        }
+        
+        // Phone number formatting
+        function formatPhoneNumber(input) {
+            let value = input.value.replace(/\D/g, '');
+            
+            if (value.length > 3 && value.length <= 7) {
+                value = value.slice(0, 3) + '-' + value.slice(3);
+            } else if (value.length > 7) {
+                value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
+            }
+            
+            input.value = value;
+        }
+        
+        // User login
+        function userLogin() {
+            const accessCode = document.getElementById('access-code').value;
+            
+            if (!accessCode) {
+                alert('접속 코드를 입력해주세요.');
+                return;
+            }
+            
+            const accessCodes = JSON.parse(localStorage.getItem('moneywise_access_codes'));
+            const validCode = accessCodes.find(code => code.code === accessCode && code.active);
+            
+            if (validCode) {
+                // Update usage count
+                validCode.usageCount++;
+                localStorage.setItem('moneywise_access_codes', JSON.stringify(accessCodes));
+                
+                // Navigate to verification page
+                showPage('verification-page');
+            } else {
+                alert('유효하지 않은 접속 코드입니다.');
+            }
+        }
+        
+        // Admin login
+        function adminLogin() {
+            const id = document.getElementById('admin-id').value;
+            const password = document.getElementById('admin-password').value;
+            
+            if (!id || !password) {
+                alert('아이디와 비밀번호를 모두 입력해주세요.');
+                return;
+            }
+            
+            const adminCredentials = JSON.parse(localStorage.getItem('moneywise_admin'));
+            
+            if (id === adminCredentials.id && password === adminCredentials.password) {
+                showPage('admin-dashboard-page');
+            } else {
+                alert('아이디 또는 비밀번호가 올바르지 않습니다.');
+            }
+        }
+        
+        // Logout
+        function logout() {
+            showPage('main-page');
+        }
+        
+        // Verification process
+        function startVerification() {
+            const phone = document.getElementById('phone-number').value;
+            const idNumber = document.getElementById('id-number').value;
+            
+            if (!phone || !idNumber) {
+                alert('전화번호와 주민번호 앞자리를 모두 입력해주세요.');
+                return;
+            }
+            
+            if (idNumber.length !== 6 || isNaN(idNumber)) {
+                alert('주민번호 앞자리는 6자리 숫자로 입력해주세요.');
+                return;
+            }
+            
+            // Show loading overlay
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('step1').classList.add('active');
+            
+            // Fix for infinite loading issue
+            loadingTimeout = setTimeout(() => {
+                document.getElementById('loading-overlay').style.display = 'none';
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step2').classList.remove('active');
+                document.getElementById('step3').classList.remove('active');
+                document.getElementById('step1').classList.remove('complete');
+                document.getElementById('step2').classList.remove('complete');
+                document.getElementById('step3').classList.remove('complete');
+                alert('인증 시간이 초과되었습니다. 다시 시도해주세요.');
+            }, 10000);
+            
+            // Simulate verification process
+            setTimeout(() => {
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step1').classList.add('complete');
+                document.getElementById('step1').innerHTML = '<i class="fas fa-check"></i> <span>개인정보 암호화 완료</span>';
+                document.getElementById('step2').classList.add('active');
+                
+                setTimeout(() => {
+                    document.getElementById('step2').classList.remove('active');
+                    document.getElementById('step2').classList.add('complete');
+                    document.getElementById('step2').innerHTML = '<i class="fas fa-check"></i> <span>인증서버 접속 완료</span>';
+                    document.getElementById('step3').classList.add('active');
+                    
+                    setTimeout(() => {
+                        document.getElementById('step3').classList.remove('active');
+                        document.getElementById('step3').classList.add('complete');
+                        document.getElementById('step3').innerHTML = '<i class="fas fa-check"></i> <span>인증 결과 확인 완료</span>';
+                        
+                        // Generate random 4-digit authentication number
+                        const authNumber = Math.floor(1000 + Math.random() * 9000).toString();
+                        
+                        // Save user info
+                        currentUser.phone = phone;
+                        currentUser.authNumber = authNumber;
+                        
+                        // Show success modal
+                        document.getElementById('auth-number').textContent = authNumber;
+                        document.getElementById('loading-overlay').style.display = 'none';
+                        document.getElementById('success-modal').style.display = 'flex';
+                        
+                        // Clear loading timeout
+                        clearTimeout(loadingTimeout);
+                        loadingTimeout = null;
+                        
+                        // Reset loading steps for next time
+                        setTimeout(() => {
+                            document.getElementById('step1').classList.remove('complete');
+                            document.getElementById('step2').classList.remove('complete');
+                            document.getElementById('step3').classList.remove('complete');
+                            document.getElementById('step1').innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>개인정보 암호화 중...</span>';
+                            document.getElementById('step2').innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>인증서버 접속 중...</span>';
+                            document.getElementById('step3').innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>인증 결과 확인 중...</span>';
+                        }, 1000);
+                    }, 800);
+                }, 800);
+            }, 800);
+        }
+        
+        // Close success modal and proceed to amount selection
+        function closeSuccessModal() {
+            document.getElementById('success-modal').style.display = 'none';
+            showPage('amount-selection-page');
+        }
+        
+        // Amount selection
+        function selectAmount(amount) {
+            currentUser.selectedAmount = amount;
+            document.getElementById('selected-amount').textContent = '₩' + parseInt(amount).toLocaleString();
+            document.getElementById('contact').value = currentUser.phone;
+            showPage('application-form-page');
+        }
+        
+        // Submit application
+        function submitApplication() {
+            const name = document.getElementById('name').value || '익명';
+            const contactTime = document.getElementById('contact-time').value;
+            const memo = document.getElementById('memo').value;
+            
+            if (!contactTime) {
+                alert('희망 연락시간을 선택해주세요.');
+                return;
+            }
+            
+            // Get existing applications
+            const applications = JSON.parse(localStorage.getItem('moneywise_applications'));
+            
+            // Add new application
+            applications.push({
+                id: Date.now().toString(),
+                name: name,
+                phone: currentUser.phone,
+                authNumber: currentUser.authNumber,
+                amount: currentUser.selectedAmount,
+                contactTime: contactTime,
+                memo: memo,
+                status: 'pending',
+                adminMemo: '',
+                publicMemo: '',
+                date: new Date().toISOString()
+            });
+            
+            // Save updated applications
+            localStorage.setItem('moneywise_applications', JSON.stringify(applications));
+            
+            // Show completion modal
+            document.getElementById('completion-modal').style.display = 'flex';
+        }
+        
+        // Close completion modal and go back to main page
+        function closeCompletionModal() {
+            document.getElementById('completion-modal').style.display = 'none';
+            showPage('main-page');
+        }
+        
+        // Check application status
+        function checkStatus() {
+            const phone = document.getElementById('check-phone').value;
+            const authCode = document.getElementById('check-auth-code').value;
+            
+            if (!phone || !authCode) {
+                alert('전화번호와 인증번호를 모두 입력해주세요.');
+                return;
+            }
+            
+            const applications = JSON.parse(localStorage.getItem('moneywise_applications'));
+            const application = applications.find(app => app.phone === phone && app.authNumber === authCode);
+            
+            if (application) {
+                let statusText;
+                let statusColor;
+                
+                switch (application.status) {
+                    case 'pending':
+                        statusText = '미처리';
+                        statusColor = '#FFC107';
+                        break;
+                    case 'in-progress':
+                        statusText = '처리중';
+                        statusColor = '#3498DB';
+                        break;
+                    case 'completed':
+                        statusText = '완료';
+                        statusColor = '#4CAF50';
+                        break;
+                }
+                
+                const date = new Date(application.date).toLocaleString();
+                
+                let html = `
+                    <div class="card">
+                        <div style="display: inline-block; padding: 5px 10px; background-color: ${statusColor}; color: white; border-radius: 5px; margin-bottom: 10px;">
+                            ${statusText}
+                        </div>
+                        <h2>₩${parseInt(application.amount).toLocaleString()}</h2>
+                        <p>신청일: ${date}</p>
+                        <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
+                            ${application.publicMemo ? `<p>${application.publicMemo}</p>` : '<p>아직 담당자 메모가 없습니다.</p>'}
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('status-content').innerHTML = html;
+                showPage('status-result-page');
+            } else {
+                document.getElementById('status-content').innerHTML = `
+                    <div class="card">
+                        <p>신청 내역이 없거나 정보가 일치하지 않습니다.</p>
+                    </div>
+                `;
+                showPage('status-result-page');
+            }
+        }
+        
+        // Admin functions
+        function updateAdminStats() {
+            const applications = JSON.parse(localStorage.getItem('moneywise_applications'));
+            
+            document.getElementById('total-applications').textContent = applications.length;
+            document.getElementById('pending-applications').textContent = applications.filter(app => app.status === 'pending').length;
+        }
+        
+        function loadApplications() {
+            const applications = JSON.parse(localStorage.getItem('moneywise_applications'));
+            const container = document.getElementById('applications-list');
+            
+            if (applications.length === 0) {
+                container.innerHTML = '<p>신청 내역이 없습니다.</p>';
+                return;
+            }
+            
+            let html = '';
+            
+            // Sort by date, most recent first
+            applications.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            applications.forEach(app => {
+                let statusText;
+                let statusColor;
+                
+                switch (app.status) {
+                    case 'pending':
+                        statusText = '미처리';
+                        statusColor = '#FFC107';
+                        break;
+                    case 'in-progress':
+                        statusText = '처리중';
+                        statusColor = '#3498DB';
+                        break;
+                    case 'completed':
+                        statusText = '완료';
+                        statusColor = '#4CAF50';
+                        break;
+                }
+                
+                const date = new Date(app.date).toLocaleString();
+                
+                html += `
+                    <div class="card" data-id="${app.id}" data-status="${app.status}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div style="display: inline-block; padding: 5px 10px; background-color: ${statusColor}; color: white; border-radius: 5px;">
+                                ${statusText}
+                            </div>
+                            <div>
+                                <button onclick="viewApplication('${app.id}')" style="background: none; border: none; color: var(--gold); cursor: pointer;">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="deleteApplication('${app.id}')" style="background: none; border: none; color: var(--error-color); cursor: pointer;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h3>${app.name} (${app.phone})</h3>
+                        <p>금액: ₩${parseInt(app.amount).toLocaleString()}</p>
+                        <p>신청일: ${date}</p>
+                        <p>인증번호: ${app.authNumber}</p>
+                        <p>희망 연락시간: ${app.contactTime}</p>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function viewApplication(id) {
+            const applications = JSON.parse(localStorage.getItem('moneywise_applications'));
+            const app = applications.find(a => a.id === id);
+            
+            if (!app) return;
+            
+            // Create modal to view and edit application
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'flex';
+            
+            let statusOptions = '';
+            ['pending', 'in-progress', 'completed'].forEach(status => {
+                statusOptions += `<option value="${status}" ${app.status === status ? 'selected' : ''}>${
+                    status === 'pending' ? '미처리' : 
+                    status === 'in-progress' ? '처리중' : '완료'
+                }</option>`;
+            });
+            
+            modal.innerHTML = `
+                <div class="modal-content" style="width: 90%; max-width: 500px;">
+                    <h2>신청 상세 정보</h2>
+                    <div style="text-align: left; margin: 20px 0;">
+                        <p><strong>이름:</strong> ${app.name}</p>
+                        <p><strong>전화번호:</strong> ${app.phone}</p>
+                        <p><strong>인증번호:</strong> ${app.authNumber}</p>
+                        <p><strong>금액:</strong> ₩${parseInt(app.amount).toLocaleString()}</p>
+                        <p><strong>희망 연락시간:</strong> ${app.contactTime}</p>
+                        <p><strong>메모:</strong> ${app.memo || '없음'}</p>
+                        <p><strong>신청일:</strong> ${new Date(app.date).toLocaleString()}</p>
+                        
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label class="form-label">상태</label>
+                            <select id="edit-status" class="form-input">
+                                ${statusOptions}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">내부용 메모</label>
+                            <textarea id="edit-admin-memo" class="form-input" rows="3">${app.adminMemo || ''}</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">고객 공개용 메모</label>
+                            <textarea id="edit-public-memo" class="form-input" rows="3">${app.publicMemo || ''}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between;">
+                        <button class="btn" style="width: 48%;" onclick="updateApplication('${app.id}')">저장</button>
+                        <button class="btn" style="width: 48%; background-color: #888;" onclick="closeModal(this.parentNode.parentNode.parentNode)">취소</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function updateApplication(id) {
+            const status = document.getElementById('edit-status').value;
+            const adminMemo = document.getElementById('edit-admin-memo').value;
+            const publicMemo = document.getElementById('edit-public-memo').value;
+            
+            const applications = JSON.parse(localStorage.getItem('moneywise_applications'));
+            const appIndex = applications.findIndex(a => a.id === id);
+            
+            if (appIndex !== -1) {
+                applications[appIndex].status = status;
+                applications[appIndex].adminMemo = adminMemo;
+                applications[appIndex].publicMemo = publicMemo;
+                
+                localStorage.setItem('moneywise_applications', JSON.stringify(applications));
+                
+                // Close modal and reload applications
+                closeAllModals();
+                loadApplications();
+                updateAdminStats();
+            }
+        }
+        
+        function deleteApplication(id) {
+            if (confirm('정말 이 신청을 삭제하시겠습니까?')) {
+                const applications = JSON.parse(localStorage.getItem('moneywise_applications'));
+                const updatedApplications = applications.filter(a => a.id !== id);
+                
+                localStorage.setItem('moneywise_applications', JSON.stringify(updatedApplications));
+                
+                loadApplications();
+                updateAdminStats();
+            }
+        }
+        
+        function loadAccessCodes() {
+            const accessCodes = JSON.parse(localStorage.getItem('moneywise_access_codes'));
+            const container = document.getElementById('access-codes-list');
+            
+            let html = '';
+            
+            accessCodes.forEach(code => {
+                const date = new Date(code.created).toLocaleDateString();
+                
+                html += `
+                    <tr>
+                        <td>${code.code}</td>
+                        <td>${code.active ? '활성' : '비활성'}</td>
+                        <td>${date}</td>
+                        <td>${code.usageCount}</td>
+                        <td>
+                            <button onclick="toggleAccessCode('${code.code}')" style="background: none; border: none; color: ${code.active ? 'var(--error-color)' : 'var(--success-color)'}; cursor: pointer;">
+                                <i class="fas ${code.active ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
+                            </button>
+                            <button onclick="deleteAccessCode('${code.code}')" style="background: none; border: none; color: var(--error-color); cursor: pointer;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function createAccessCode() {
+            // Generate random code
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            
+            for (let i = 0; i < 8; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            
+            // Add new access code
+            const accessCodes = JSON.parse(localStorage.getItem('moneywise_access_codes'));
+            
+            accessCodes.push({
+                code: code,
+                active: true,
+                created: new Date().toISOString(),
+                usageCount: 0
+            });
+            
+            localStorage.setItem('moneywise_access_codes', JSON.stringify(accessCodes));
+            
+            loadAccessCodes();
+        }
+        
+        function toggleAccessCode(code) {
+            const accessCodes = JSON.parse(localStorage.getItem('moneywise_access_codes'));
+            const codeIndex = accessCodes.findIndex(c => c.code === code);
+            
+            if (codeIndex !== -1) {
+                accessCodes[codeIndex].active = !accessCodes[codeIndex].active;
+                localStorage.setItem('moneywise_access_codes', JSON.stringify(accessCodes));
+                
+                loadAccessCodes();
+            }
+        }
+        
+        function deleteAccessCode(code) {
+            // Don't allow deleting the last access code
+            const accessCodes = JSON.parse(localStorage.getItem('moneywise_access_codes'));
+            
+            if (accessCodes.length <= 1) {
+                alert('최소 하나의 접속 코드가 필요합니다.');
+                return;
+            }
+            
+            if (confirm('정말 이 접속 코드를 삭제하시겠습니까?')) {
+                const updatedCodes = accessCodes.filter(c => c.code !== code);
+                localStorage.setItem('moneywise_access_codes', JSON.stringify(updatedCodes));
+                
+                loadAccessCodes();
+            }
+        }
+        
+        function loadStatistics() {
+            const applications = JSON.parse(localStorage.getItem('moneywise_applications'));
+            
+            // Amount statistics
+            const amountStats = {};
+            
+            applications.forEach(app => {
+                if (amountStats[app.amount]) {
+                    amountStats[app.amount]++;
+                } else {
+                    amountStats[app.amount] = 1;
+                }
+            });
+            
+            let amountHtml = '<div style="margin-top: 15px;">';
+            
+            for (const amount in amountStats) {
+                amountHtml += `
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <div style="width: 120px;">₩${parseInt(amount).toLocaleString()}</div>
+                        <div style="flex-grow: 1; height: 20px; background-color: #333; border-radius: 10px; overflow: hidden;">
+                            <div style="width: ${(amountStats[amount] / applications.length) * 100}%; height: 100%; background-color: var(--gold);"></div>
+                        </div>
+                        <div style="width: 30px; text-align: right; margin-left: 10px;">${amountStats[amount]}</div>
+                    </div>
+                `;
+            }
+            
+            amountHtml += '</div>';
+            
+            document.getElementById('amount-stats').innerHTML = amountHtml;
+            
+            // Status statistics
+            const statusStats = {
+                pending: 0,
+                'in-progress': 0,
+                completed: 0
+            };
+            
+            applications.forEach(app => {
+                statusStats[app.status]++;
+            });
+            
+            let statusHtml = '<div style="margin-top: 15px;">';
+            
+            const statusLabels = {
+                pending: '미처리',
+                'in-progress': '처리중',
+                completed: '완료'
+            };
+            
+            const statusColors = {
+                pending: '#FFC107',
+                'in-progress': '#3498DB',
+                completed: '#4CAF50'
+            };
+            
+            for (const status in statusStats) {
+                statusHtml += `
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <div style="width: 120px;">${statusLabels[status]}</div>
+                        <div style="flex-grow: 1; height: 20px; background-color: #333; border-radius: 10px; overflow: hidden;">
+                            <div style="width: ${applications.length > 0 ? (statusStats[status] / applications.length) * 100 : 0}%; height: 100%; background-color: ${statusColors[status]};"></div>
+                        </div>
+                        <div style="width: 30px; text-align: right; margin-left: 10px;">${statusStats[status]}</div>
+                    </div>
+                `;
+            }
+            
+            statusHtml += '</div>';
+            
+            document.getElementById('status-stats').innerHTML = statusHtml;
+        }
+        
+        function updateAdminCredentials() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newAdminId = document.getElementById('new-admin-id').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (!currentPassword) {
+                alert('현재 비밀번호를 입력해주세요.');
+                return;
+            }
+            
+            if (newPassword && newPassword !== confirmPassword) {
+                alert('새 비밀번호와 확인 비밀번호가 일치하지 않습니다.');
+                return;
+            }
+            
+            const adminCredentials = JSON.parse(localStorage.getItem('moneywise_admin'));
+            
+            if (currentPassword !== adminCredentials.password) {
+                alert('현재 비밀번호가 올바르지 않습니다.');
+                return;
+            }
+            
+            if (newAdminId) {
+                adminCredentials.id = newAdminId;
+            }
+            
+            if (newPassword) {
+                adminCredentials.password = newPassword;
+            }
+            
+            localStorage.setItem('moneywise_admin', JSON.stringify(adminCredentials));
+            
+            alert('관리자 정보가 업데이트되었습니다.');
+            
+            // Clear form
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-admin-id').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+        }
+        
+        function exportData() {
+            const applications = JSON.parse(localStorage.getItem('moneywise_applications'));
+            const accessCodes = JSON.parse(localStorage.getItem('moneywise_access_codes'));
+            
+            const data = {
+                applications: applications,
+                accessCodes: accessCodes,
+                exported: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'moneywise_data_' + new Date().toISOString().slice(0, 10) + '.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+        
+        function confirmDataReset() {
+            if (confirm('모든 데이터를 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                if (confirm('정말로 초기화하시겠습니까? 모든 신청 내역과 접속 코드 사용 기록이 삭제됩니다.')) {
+                    // Reset applications
+                    localStorage.setItem('moneywise_applications', JSON.stringify([]));
+                    
+                    // Reset access codes usage
+                    const accessCodes = JSON.parse(localStorage.getItem('moneywise_access_codes'));
+                    accessCodes.forEach(code => {
+                        code.usageCount = 0;
+                    });
+                    localStorage.setItem('moneywise_access_codes', JSON.stringify(accessCodes));
+                    
+                    alert('모든 데이터가 초기화되었습니다.');
+                    
+                    // Update UI
+                    updateAdminStats();
+                }
+            }
+        }
+        
+        // Utility functions
+        function closeModal(modal) {
+            modal.style.display = 'none';
+            setTimeout(() => {
+                modal.remove();
+            }, 300);
+        }
+        
+        function closeAllModals() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.style.display = 'none';
+                setTimeout(() => {
+                    if (modal.parentNode) {
+                        modal.parentNode.removeChild(modal);
+                    }
+                }, 300);
+            });
+        }
+        
+        // Add filter functionality
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('filter-button')) {
+                const filterButtons = document.querySelectorAll('.filter-button');
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                
+                e.target.classList.add('active');
+                
+                const filter = e.target.getAttribute('data-filter');
+                const applications = document.querySelectorAll('#applications-list .card');
+                
+                applications.forEach(app => {
+                    if (filter === 'all' || app.getAttribute('data-status') === filter) {
+                        app.style.display = 'block';
+                    } else {
+                        app.style.display = 'none';
+                    }
+                });
+            }
+        });
+        
+        // Initialize search functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.querySelector('.search-input');
+            const searchButton = document.querySelector('.search-button');
+            
+            if (searchInput && searchButton) {
+                const performSearch = () => {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    const applications = document.querySelectorAll('#applications-list .card');
+                    
+                    applications.forEach(app => {
+                        const text = app.textContent.toLowerCase();
+                        if (text.includes(searchTerm)) {
+                            app.style.display = 'block';
+                        } else {
+                            app.style.display = 'none';
+                        }
+                    });
+                };
+                
+                searchButton.addEventListener('click', performSearch);
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performSearch();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+    <script id="html_badge_script1">
+        window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
+            "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDuvV4wrj8NG4ODSWQ4u5O96DzVmxVWaCOVMHNZGiGDNK41gu8IaxID3Z3mRby%2FgJNFi8Ymn7ermbMrZq%2Bt7mNweEBQjRDYPsS5fkGtIXVkarLSJiLIxBFmq4Tov%2F8rCGlbULbQRRPikFmtSwUPwALmbnfqvGJ7iPXvxF6isqq1Ef7DsHJ425aXG600hdAruXcIcxiQUUZWi6AcHzpA%2FHVYax1dZ63o%2FaM3azjHGpGJqndjnL1u6jseneZTzvAQ7DBNpvo4g7kuL1iSVfBXedxH2VTOf58S5J5qeU3YlkS0KLkJbUj5CcIjlV9DAHTIAWtODGvpt2PEIxs2c2oyDVVRwH9qRkgKiAzef0Lv6nf7J1xiMJoQxv7pDD1e801oFvccXP5vUe77kCJYNDOQLadOXaREcDGaf5t1ayrA12yteBJtUct0k8R5ldwqUFROorQ8jCed6plBWZgn7ZH1tgYaQU0Nsu%2FzOHfdmGRx7ziwPflO%2FBN1wsT1IXiFJOUzHDJw%3D%3D";
+        window.__genspark_locale = "ko-KR";
+        window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDuvV4wrj8NG4ODSWQ4u5O96DzVmxVWaCOVMHNZGiGDNK41gu8IaxID3Z3mRby/gJNFi8Ymn7ermbMrZq+t7mNweEBQjRDYPsS5fkGtIXVkarLSJiLIxBFmq4Tov/8rCGlbULbQRRPikFmtSwUPwALmbnfqvGJ7iPXvxF6isqq1Ef7DsHJ425aXG600hdAruXcIcxiQUUZWi6AcHzpA/HVYax1dZ63o/aM3azjHGpGJqndjnL1u6jseneZTzvAQ7DBNpvo4g7kuL1iSVfBXedxH2VTOf58S5J5qeU3YlkS0KLkJbUj5CcIjlV9DAHTIAWtODGvpt2PEIxs2c2oyDVVRwH9qRkgKiAzef0Lv6nf7J1xiMJoQxv7pDD1e801oFvccXP5vUe77kCJYNDOQLadOXaREcDGaf5t1ayrA12yteBJtUct0k8R5ldwqUFROorQ8jCed6plBWZgn7ZH1tgYaQU0Nsu/zOHfdmGRx7ziwPflO/BN1wsT1IXiFJOUzHDJw==";
+    </script>
+    
